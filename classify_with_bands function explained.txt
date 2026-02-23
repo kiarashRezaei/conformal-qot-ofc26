@@ -1,0 +1,131 @@
+🔧 Setup (toy example)
+
+Let’s say the theoretical OSNR threshold for a certain modulation format is
+T = 21 \text{ dB}.
+
+You have five lightpaths with predicted OSNR (point) and their conformal bands (in dB):
+
+Sample	True OSNR	Predicted (ŷ)	Lower (L)	Upper (U)	Comment
+1	22.5	22.8	22.4	23.0	Entire band well above 21 ✅
+2	20.5	20.8	20.6	21.2	Band crosses 21 (borderline) ⚠️
+3	19.5	19.6	19.3	19.9	Entirely below 21 ❌
+4	21.1	21.3	21.0	21.6	Slightly above threshold 👍
+5	20.9	21.1	20.5	21.3	Big overlap around threshold ⚠️
+
+Let’s take delta = 0.5 dB (the safety margin).
+
+⸻
+
+🧱 Common interpretation rules
+
+Symbol	Meaning
+L \ge T + \delta	Band entirely above threshold → confident feasible (class 1)
+U \le T - \delta	Band entirely below threshold → confident infeasible (class 0)
+L \le T \le U	Band crosses threshold → ambiguous region
+
+
+⸻
+
+1️⃣ Safety-First Policy
+
+“Never risk a QoT failure.”
+
+Rule:
+	•	class 1 only if L \ge T + \delta
+	•	class 0 otherwise (including any overlap)
+
+Sample	L	U	Decision	Reason
+1	22.4	23.0	1	L = 22.4 ≥ 21.5 → safe above
+2	20.6	21.2	0	Band crosses 21 → uncertain → conservative
+3	19.3	19.9	0	Entirely below
+4	21.0	21.6	0	L = 21 < 21.5 → overlap → 0
+5	20.5	21.3	0	Overlap → 0
+
+✅ Guarantees no false positives, but may block feasible paths (pessimistic).
+
+⸻
+
+2️⃣ Balanced Policy
+
+“Allow feasible decision if most of the band is above the threshold.”
+
+Extra quantities:
+\phi_\text{above} = \frac{\max(0,U-T)}{U-L}.
+
+Let’s set p_{\min}=0.7.
+
+Sample	L	U	ϕₐᵦₒᵥₑ	Decision	Reason
+1	22.4	23.0	1.00	1	Entirely above
+2	20.6	21.2	(21.2−21)/(21.2−20.6)=0.33	0	Only 33 % above
+3	19.3	19.9	0.00	0	Below
+4	21.0	21.6	(21.6−21)/0.6=1.00	1	Mostly above & close
+5	20.5	21.3	(21.3−21)/0.8=0.375	0	Only 37 % above
+
+✅ Keeps safety but recovers clear near-threshold successes.
+
+⸻
+
+3️⃣ Optimistic Policy
+
+“If any part above threshold → assume it will work.”
+
+Rule:
+	•	class 1 if U ≥ T
+	•	class 0 otherwise.
+
+Sample	L	U	Decision	Reason
+1	22.4	23.0	1	Fully above
+2	20.6	21.2	1	Upper > 21 → maybe feasible
+3	19.3	19.9	0	Entirely below
+4	21.0	21.6	1	Above
+5	20.5	21.3	1	Slightly above
+
+✅ Maximizes capacity (high throughput).
+❌ Risk: many false positives → potential QoT violations.
+
+⸻
+
+4️⃣ Abstain (Three-way) Policy
+
+“Admit only confident 0/1; abstain otherwise.”
+
+Rule:
+	•	class 1 if L \ge T+\delta
+	•	class 0 if U \le T-\delta
+	•	otherwise abstain (−1)
+
+Sample	L	U	Decision	Reason
+1	22.4	23.0	1	Confident above
+2	20.6	21.2	−1	Overlaps
+3	19.3	19.9	0	Below
+4	21.0	21.6	−1	Overlaps
+5	20.5	21.3	−1	Overlaps
+
+✅ Explicitly signals “uncertain → pick lower modulation or measure again”.
+
+⸻
+
+📊 Summary Comparison
+
+Sample	True OSNR	Safety-First	Balanced	Optimistic	Abstain
+1	22.5	1	1	1	1
+2	20.5	0	0	1	−1
+3	19.5	0	0	0	0
+4	21.1	0	1	1	−1
+5	20.9	0	0	1	−1
+
+
+⸻
+
+🔍 Interpretation in Optical QoT terms
+
+Policy	Network behavior	Risk type
+Safety-First	Strongly pessimistic → avoids any QoT failure but wastes capacity.	
+Balanced	Calibrated → uses uncertainty to admit safe margins; practical for deployment.	
+Optimistic	Aggressive / optimistic → pushes throughput, risk of outages (QoT failures).	
+Abstain	Hybrid → adds “request verification or downgrade” region for ambiguous bands.	
+
+
+⸻
+
+If you’d like, I can extend this example with a confusion matrix for each policy using random ground truth (based on the true OSNR ≥ 21 rule), so you can see TP/TN/FP/FN percentages side-by-side. Would you like me to show that next?
