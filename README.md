@@ -81,6 +81,6 @@ If you use this code, please cite the OFC 2026 paper:
   title     = {Policy-Driven Conformal Prediction for Trustworthy QoT Estimation},
   booktitle = {Optical Fiber Communication Conference (OFC)},
   year      = {2026},
-  note      = {Session M4A.3, March 16, 2026},
+  pages      = {M4A.3}
 }
 ```
