@@ -16,6 +16,7 @@ It provides a complete, notebook-based pipeline for:
 - Title: Policy-Driven Conformal Prediction for Trustworthy QoT Estimation
 - Conference slot: Monday, March 16, 2026, 17:15-17:30 (Room 403A), session M4A.3
 - Schedule: https://www.ofcconference.org/schedule/#/Monday/531347
+- Full text: [Policy-driven Conformal Prediction for Trustworthy QoT Estimation](https://research.chalmers.se/en/publication/549958)
 
 ## Repository Layout
 - notebook/cp_qot_sdm.ipynb
